@@ -11,6 +11,7 @@ export default function Panel() {
   const [role, setRole] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [resetMessage, setResetMessage] = useState('');
 
   useEffect(() => {
     let active = true;
@@ -59,6 +60,28 @@ export default function Panel() {
     router.refresh();
   }
 
+  function resetTests() {
+    if (role !== 'ADMIN_GENERAL') return;
+
+    const first = window.confirm(
+      'RESETEO DE PRUEBAS\n\nEsta acción limpiará los datos temporales de prueba del navegador. No elimina usuarios, perfiles, establecimientos ni los instrumentos oficiales. ¿Desea continuar?'
+    );
+    if (!first) return;
+
+    const second = window.confirm(
+      'Confirme nuevamente el RESETEO DE PRUEBAS. Esta acción no se puede deshacer para los datos temporales.'
+    );
+    if (!second) return;
+
+    try {
+      window.localStorage.clear();
+      window.sessionStorage.clear();
+      setResetMessage('Entorno de prueba reiniciado. Los catálogos, usuarios y encuestas oficiales se conservaron.');
+    } catch (e) {
+      setResetMessage('No fue posible completar el reseteo local.');
+    }
+  }
+
   if (loading) {
     return <main className="shell"><section className="loginCard"><p>Verificando acceso…</p></section></main>;
   }
@@ -74,6 +97,23 @@ export default function Panel() {
         <p><strong>Perfil:</strong> {role}</p>
         {error && <p role="alert">{error}</p>}
         {!error && <a className="button" href="/encuestas">VER ENCUESTAS</a>}
+
+        {!error && role === 'ADMIN_GENERAL' && (
+          <div style={{marginTop:'16px',paddingTop:'16px',borderTop:'1px solid #dce6e2'}}>
+            <button
+              type="button"
+              onClick={resetTests}
+              style={{background:'#8f2f2f'}}
+            >
+              RESETEAR PRUEBAS
+            </button>
+            <p style={{fontSize:'13px',color:'#647a74',marginTop:'8px'}}>
+              Conserva usuarios, perfiles, catálogos e instrumentos oficiales.
+            </p>
+            {resetMessage && <p role="status"><strong>{resetMessage}</strong></p>}
+          </div>
+        )}
+
         <button type="button" onClick={signOut}>CERRAR SESIÓN</button>
       </section>
     </main>
