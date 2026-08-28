@@ -62,31 +62,23 @@ export default function Panel() {
 
   function resetTests() {
     if (role !== 'ADMIN_GENERAL') return;
-
-    const first = window.confirm(
-      'RESETEO DE PRUEBAS\n\nEsta acción limpiará los datos temporales de prueba del navegador. No elimina usuarios, perfiles, establecimientos ni los instrumentos oficiales. ¿Desea continuar?'
-    );
+    const first = window.confirm('RESETEO DE PRUEBAS\n\nEsta acción limpiará los datos temporales de prueba del navegador. No elimina usuarios, perfiles, catálogos ni instrumentos oficiales. ¿Desea continuar?');
     if (!first) return;
-
-    const second = window.confirm(
-      'Confirme nuevamente el RESETEO DE PRUEBAS. Esta acción no se puede deshacer para los datos temporales.'
-    );
+    const second = window.confirm('Confirme nuevamente el RESETEO DE PRUEBAS.');
     if (!second) return;
-
     try {
       window.localStorage.clear();
       window.sessionStorage.clear();
-      setResetMessage('Entorno de prueba reiniciado. Los catálogos, usuarios y encuestas oficiales se conservaron.');
-    } catch (e) {
+      setResetMessage('Entorno de prueba reiniciado.');
+    } catch {
       setResetMessage('No fue posible completar el reseteo local.');
     }
   }
 
-  if (loading) {
-    return <main className="shell"><section className="loginCard"><p>Verificando acceso…</p></section></main>;
-  }
+  if (loading) return <main className="shell"><section className="loginCard"><p>Verificando acceso…</p></section></main>;
 
   const esAplicador = role === 'ENCUESTADOR' || role === 'JEFE_ENCUESTADORES';
+  const esConsulta = ['CONSULTA_ECOR','CONSULTA_MUNICIPAL','CONSULTA_ESTABLECIMIENTO','DIRECTOR_HOSPITALARIO'].includes(role);
 
   return (
     <main className="shell">
@@ -99,20 +91,24 @@ export default function Panel() {
         <p><strong>Perfil:</strong> {role}</p>
         {error && <p role="alert">{error}</p>}
 
-        {!error && esAplicador && <a className="button" href="/encuestador">APLICAR ENCUESTAS</a>}
-        {!error && !esAplicador && <a className="button" href="/encuestas">VER ENCUESTAS</a>}
         {!error && role === 'ADMIN_GENERAL' && (
-          <a className="button" href="/encuestadores" style={{display:'block',textAlign:'center',marginTop:'12px'}}>
-            GESTIONAR ENCUESTADORES
-          </a>
+          <>
+            <a className="button" href="/encuestas">VER ENCUESTAS</a>
+            <a className="button" href="/encuestadores" style={{marginLeft:'10px'}}>GESTIONAR ENCUESTADORES</a>
+            <a className="button" href="/roles" style={{marginLeft:'10px'}}>TIPOS DE USUARIO</a>
+          </>
         )}
+
+        {!error && role === 'ADMIN_ENCUESTAS' && <a className="button" href="/encuestadores">GESTIONAR ENCUESTADORES</a>}
+        {!error && role === 'JEFE_ENCUESTADORES' && <a className="button" href="/jefe-encuestadores">PANEL JEFE</a>}
+        {!error && role === 'ENCUESTADOR' && <a className="button" href="/encuestador">APLICAR ENCUESTAS</a>}
+        {!error && esConsulta && <a className="button" href="/consulta">VER RESULTADOS</a>}
+        {!error && !esAplicador && !esConsulta && !['ADMIN_GENERAL','ADMIN_ENCUESTAS'].includes(role) && <a className="button" href="/encuestas">VER ENCUESTAS</a>}
 
         {!error && role === 'ADMIN_GENERAL' && (
           <div style={{marginTop:'16px',paddingTop:'16px',borderTop:'1px solid #dce6e2'}}>
             <button type="button" onClick={resetTests} style={{background:'#8f2f2f'}}>RESETEAR PRUEBAS</button>
-            <p style={{fontSize:'13px',color:'#647a74',marginTop:'8px'}}>
-              Conserva usuarios, perfiles, catálogos e instrumentos oficiales.
-            </p>
+            <p style={{fontSize:'13px',color:'#647a74',marginTop:'8px'}}>Conserva usuarios, perfiles, catálogos e instrumentos oficiales.</p>
             {resetMessage && <p role="status"><strong>{resetMessage}</strong></p>}
           </div>
         )}
