@@ -24,7 +24,7 @@ export default function EncuestadoresPage() {
 
       const { data: perfilData } = await supabase.rpc('obtener_mi_perfil');
       const perfil = Array.isArray(perfilData) ? perfilData[0] : null;
-      if (!perfil || !['ADMIN_GENERAL','ADMIN_ENCUESTAS'].includes(perfil.rol) || !perfil.activo) {
+      if (!perfil || !['ADMIN_GENERAL','ADMIN_ENCUESTAS','JEFE_ENCUESTADORES'].includes(perfil.rol) || !perfil.activo) {
         router.replace('/panel');
         return;
       }
@@ -42,16 +42,18 @@ export default function EncuestadoresPage() {
     return () => { active = false; };
   }, [router]);
 
+  const soloConsulta = rol === 'JEFE_ENCUESTADORES';
+
   return (
     <main className="shell">
       <section className="loginCard" style={{maxWidth:'900px'}}>
         <div className="badge">ENCUESTAS · OLANCHO</div>
-        <h1 style={{fontSize:'34px'}}>Gestionar encuestadores</h1>
-        <p>{rol === 'ADMIN_ENCUESTAS' ? 'Administración de encuestadores dentro del alcance autorizado.' : 'Administración general de asignaciones de encuestadores.'}</p>
+        <h1 style={{fontSize:'34px'}}>{soloConsulta ? 'Encuestadores asignados' : 'Gestionar encuestadores'}</h1>
+        <p>{soloConsulta ? 'Consulta operativa para supervisión y asignación del tipo de encuesta.' : rol === 'ADMIN_ENCUESTAS' ? 'Administración de encuestadores dentro del alcance autorizado.' : 'Administración general de asignaciones de encuestadores.'}</p>
 
         <div style={{background:'#f7faf9',border:'1px solid #dce6e2',borderRadius:'12px',padding:'14px',margin:'18px 0'}}>
           <strong>Reglas vigentes</strong>
-          <p style={{margin:'8px 0 0'}}>Cada encuestador debe ser externo a SESAL, conservar un ID único permanente y tener establecimiento u hospital asignado. El tipo de encuesta se asigna previamente y no lo elige el encuestador.</p>
+          <p style={{margin:'8px 0 0'}}>Cada encuestador debe ser externo a SESAL, conservar un ID único permanente y tener establecimiento u hospital asignado. El Jefe define previamente el tipo de encuesta; el encuestador no lo elige.</p>
         </div>
 
         {loading && <p>Cargando…</p>}
@@ -59,7 +61,7 @@ export default function EncuestadoresPage() {
         {!loading && !error && items.length === 0 && (
           <div style={{border:'1px dashed #bdcbc6',borderRadius:'12px',padding:'18px',margin:'18px 0'}}>
             <strong>Aún no hay encuestadores asignados.</strong>
-            <p style={{marginBottom:0}}>Cuando se creen y asignen encuestadores, aparecerán aquí con su ID, establecimiento, tipo de encuesta y estado.</p>
+            <p style={{marginBottom:0}}>Cuando existan asignaciones, aparecerán aquí con ID, establecimiento, tipo de encuesta y estado.</p>
           </div>
         )}
 
