@@ -9,6 +9,7 @@ export default function EncuestadoresPage() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [rol, setRol] = useState('');
 
   useEffect(() => {
     let active = true;
@@ -23,10 +24,11 @@ export default function EncuestadoresPage() {
 
       const { data: perfilData } = await supabase.rpc('obtener_mi_perfil');
       const perfil = Array.isArray(perfilData) ? perfilData[0] : null;
-      if (!perfil || perfil.rol !== 'ADMIN_GENERAL' || !perfil.activo) {
+      if (!perfil || !['ADMIN_GENERAL','ADMIN_ENCUESTAS'].includes(perfil.rol) || !perfil.activo) {
         router.replace('/panel');
         return;
       }
+      setRol(perfil.rol);
 
       const { data, error: rpcError } = await supabase.rpc('listar_encuestadores_admin');
       if (!active) return;
@@ -45,7 +47,7 @@ export default function EncuestadoresPage() {
       <section className="loginCard" style={{maxWidth:'900px'}}>
         <div className="badge">ENCUESTAS · OLANCHO</div>
         <h1 style={{fontSize:'34px'}}>Gestionar encuestadores</h1>
-        <p>Administración de asignaciones de encuestadores.</p>
+        <p>{rol === 'ADMIN_ENCUESTAS' ? 'Administración de encuestadores dentro del alcance autorizado.' : 'Administración general de asignaciones de encuestadores.'}</p>
 
         <div style={{background:'#f7faf9',border:'1px solid #dce6e2',borderRadius:'12px',padding:'14px',margin:'18px 0'}}>
           <strong>Reglas vigentes</strong>
