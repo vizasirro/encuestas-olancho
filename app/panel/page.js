@@ -73,7 +73,12 @@ export default function Panel() {
           </div>
         )}
 
-        {!error && role === 'ADMIN_ENCUESTAS' && <a className="button" href="/encuestadores">GESTIONAR ENCUESTADORES</a>}
+        {!error && role === 'ADMIN_ENCUESTAS' && (
+          <div style={{display:'grid',gap:'10px'}}>
+            <a className="button" href="/encuestas">VER ENCUESTAS</a>
+            <a className="button" href="/encuestadores">GESTIONAR ENCUESTADORES</a>
+          </div>
+        )}
         {!error && role === 'JEFE_ENCUESTADORES' && <a className="button" href="/jefe-encuestadores">PANEL JEFE</a>}
         {!error && role === 'ENCUESTADOR' && <a className="button" href="/encuestador">APLICAR ENCUESTAS</a>}
         {!error && esConsulta && <a className="button" href="/consulta">VER RESULTADOS</a>}
