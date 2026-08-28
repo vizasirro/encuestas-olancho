@@ -100,18 +100,26 @@ export default function InstrumentoPage() {
           <div style={{display:'grid',gap:'10px',marginTop:'20px'}}>
             {opciones.map((opcion) => {
               const texto = typeof opcion === 'string' ? opcion : (opcion?.label || opcion?.texto || JSON.stringify(opcion));
+              const seleccionada = respuestaActual === texto;
               return (
                 <button
                   type="button"
                   key={texto}
                   onClick={() => responder(texto)}
+                  aria-pressed={seleccionada}
                   style={{
                     width:'100%',
                     textAlign:'left',
-                    background: respuestaActual === texto ? '#0f513f' : '#17634e'
+                    background: seleccionada ? '#f2b705' : '#ffffff',
+                    color: seleccionada ? '#17201d' : '#173d33',
+                    border: seleccionada ? '3px solid #8a6500' : '2px solid #17634e',
+                    boxShadow: seleccionada ? '0 0 0 4px rgba(242,183,5,.22)' : 'none',
+                    fontWeight: seleccionada ? 800 : 650,
+                    transform: seleccionada ? 'scale(1.012)' : 'scale(1)',
+                    transition: 'all .15s ease'
                   }}
                 >
-                  {texto}
+                  {seleccionada ? `✓ SELECCIONADO · ${texto}` : texto}
                 </button>
               );
             })}
