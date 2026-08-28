@@ -86,6 +86,8 @@ export default function Panel() {
     return <main className="shell"><section className="loginCard"><p>Verificando acceso…</p></section></main>;
   }
 
+  const esAplicador = role === 'ENCUESTADOR' || role === 'JEFE_ENCUESTADORES';
+
   return (
     <main className="shell">
       <section className="loginCard">
@@ -96,17 +98,13 @@ export default function Panel() {
         <p><strong>Usuario:</strong> {email}</p>
         <p><strong>Perfil:</strong> {role}</p>
         {error && <p role="alert">{error}</p>}
-        {!error && <a className="button" href="/encuestas">VER ENCUESTAS</a>}
+
+        {!error && esAplicador && <a className="button" href="/encuestador">APLICAR ENCUESTAS</a>}
+        {!error && !esAplicador && <a className="button" href="/encuestas">VER ENCUESTAS</a>}
 
         {!error && role === 'ADMIN_GENERAL' && (
           <div style={{marginTop:'16px',paddingTop:'16px',borderTop:'1px solid #dce6e2'}}>
-            <button
-              type="button"
-              onClick={resetTests}
-              style={{background:'#8f2f2f'}}
-            >
-              RESETEAR PRUEBAS
-            </button>
+            <button type="button" onClick={resetTests} style={{background:'#8f2f2f'}}>RESETEAR PRUEBAS</button>
             <p style={{fontSize:'13px',color:'#647a74',marginTop:'8px'}}>
               Conserva usuarios, perfiles, catálogos e instrumentos oficiales.
             </p>
