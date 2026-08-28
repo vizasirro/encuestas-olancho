@@ -101,6 +101,11 @@ export default function Panel() {
 
         {!error && esAplicador && <a className="button" href="/encuestador">APLICAR ENCUESTAS</a>}
         {!error && !esAplicador && <a className="button" href="/encuestas">VER ENCUESTAS</a>}
+        {!error && role === 'ADMIN_GENERAL' && (
+          <a className="button" href="/encuestadores" style={{display:'block',textAlign:'center',marginTop:'12px'}}>
+            GESTIONAR ENCUESTADORES
+          </a>
+        )}
 
         {!error && role === 'ADMIN_GENERAL' && (
           <div style={{marginTop:'16px',paddingTop:'16px',borderTop:'1px solid #dce6e2'}}>
