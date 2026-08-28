@@ -52,6 +52,7 @@ export default function EncuestasPage() {
             <strong>{item.nombre}</strong>
             <p style={{margin:'6px 0 0'}}>Tipo: {item.tipo}</p>
             <p style={{margin:'6px 0 0'}}>Preguntas: {item.preguntas}</p>
+            <a className="button" href={`/encuestas/${item.codigo}`} style={{marginTop:'12px'}}>ABRIR INSTRUMENTO</a>
           </div>
         ))}
         <a className="back" href="/panel">← Volver al panel</a>
