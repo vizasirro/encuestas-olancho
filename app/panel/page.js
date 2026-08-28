@@ -15,40 +15,20 @@ export default function Panel() {
 
   useEffect(() => {
     let active = true;
-
     async function loadSession() {
       const supabase = createClient();
       const { data: { user }, error: userError } = await supabase.auth.getUser();
-
-      if (userError || !user) {
-        router.replace('/login');
-        return;
-      }
-
+      if (userError || !user) { router.replace('/login'); return; }
       const { data, error: profileError } = await supabase.rpc('obtener_mi_perfil');
       const profile = Array.isArray(data) ? data[0] : null;
-
       if (!active) return;
-
       setEmail(user.email || '');
-      if (profileError) {
-        setError('No fue posible leer el perfil del usuario.');
-        setRole('SIN PERFIL');
-      } else if (!profile) {
-        setError('El usuario está autenticado, pero no tiene un perfil asignado.');
-        setRole('SIN PERFIL');
-      } else if (!profile.activo) {
-        setError('Este usuario se encuentra inactivo.');
-        setName(profile.nombre || '');
-        setRole(profile.rol || 'SIN PERFIL');
-      } else {
-        setName(profile.nombre || '');
-        setRole(profile.rol || 'SIN PERFIL');
-      }
-
+      if (profileError) { setError('No fue posible leer el perfil del usuario.'); setRole('SIN PERFIL'); }
+      else if (!profile) { setError('El usuario está autenticado, pero no tiene un perfil asignado.'); setRole('SIN PERFIL'); }
+      else if (!profile.activo) { setError('Este usuario se encuentra inactivo.'); setName(profile.nombre || ''); setRole(profile.rol || 'SIN PERFIL'); }
+      else { setName(profile.nombre || ''); setRole(profile.rol || 'SIN PERFIL'); }
       setLoading(false);
     }
-
     loadSession();
     return () => { active = false; };
   }, [router]);
@@ -62,17 +42,10 @@ export default function Panel() {
 
   function resetTests() {
     if (role !== 'ADMIN_GENERAL') return;
-    const first = window.confirm('RESETEO DE PRUEBAS\n\nEsta acción limpiará los datos temporales de prueba del navegador. No elimina usuarios, perfiles, catálogos ni instrumentos oficiales. ¿Desea continuar?');
-    if (!first) return;
-    const second = window.confirm('Confirme nuevamente el RESETEO DE PRUEBAS.');
-    if (!second) return;
-    try {
-      window.localStorage.clear();
-      window.sessionStorage.clear();
-      setResetMessage('Entorno de prueba reiniciado.');
-    } catch {
-      setResetMessage('No fue posible completar el reseteo local.');
-    }
+    if (!window.confirm('RESETEO DE PRUEBAS\n\nEsta acción limpiará los datos temporales de prueba del navegador. No elimina usuarios, perfiles, catálogos ni instrumentos oficiales. ¿Desea continuar?')) return;
+    if (!window.confirm('Confirme nuevamente el RESETEO DE PRUEBAS.')) return;
+    try { window.localStorage.clear(); window.sessionStorage.clear(); setResetMessage('Entorno de prueba reiniciado.'); }
+    catch { setResetMessage('No fue posible completar el reseteo local.'); }
   }
 
   if (loading) return <main className="shell"><section className="loginCard"><p>Verificando acceso…</p></section></main>;
@@ -92,11 +65,12 @@ export default function Panel() {
         {error && <p role="alert">{error}</p>}
 
         {!error && role === 'ADMIN_GENERAL' && (
-          <>
+          <div style={{display:'grid',gap:'10px'}}>
             <a className="button" href="/encuestas">VER ENCUESTAS</a>
-            <a className="button" href="/encuestadores" style={{marginLeft:'10px'}}>GESTIONAR ENCUESTADORES</a>
-            <a className="button" href="/roles" style={{marginLeft:'10px'}}>TIPOS DE USUARIO</a>
-          </>
+            <a className="button" href="/usuarios">GESTIONAR USUARIOS</a>
+            <a className="button" href="/encuestadores">GESTIONAR ENCUESTADORES</a>
+            <a className="button" href="/roles">TIPOS DE USUARIO</a>
+          </div>
         )}
 
         {!error && role === 'ADMIN_ENCUESTAS' && <a className="button" href="/encuestadores">GESTIONAR ENCUESTADORES</a>}
