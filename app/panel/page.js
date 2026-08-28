@@ -79,6 +79,8 @@ export default function Panel() {
         {!error && esConsulta && <a className="button" href="/consulta">VER RESULTADOS</a>}
         {!error && !esAplicador && !esConsulta && !['ADMIN_GENERAL','ADMIN_ENCUESTAS'].includes(role) && <a className="button" href="/encuestas">VER ENCUESTAS</a>}
 
+        {!error && <a className="button" href="/actualizar-contrasena" style={{marginTop:'12px'}}>CAMBIAR CONTRASEÑA</a>}
+
         {!error && role === 'ADMIN_GENERAL' && (
           <div style={{marginTop:'16px',paddingTop:'16px',borderTop:'1px solid #dce6e2'}}>
             <button type="button" onClick={resetTests} style={{background:'#8f2f2f'}}>RESETEAR PRUEBAS</button>
