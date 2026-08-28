@@ -69,6 +69,7 @@ export default function Panel() {
             <a className="button" href="/encuestas">VER ENCUESTAS</a>
             <a className="button" href="/usuarios">GESTIONAR USUARIOS</a>
             <a className="button" href="/encuestadores">GESTIONAR ENCUESTADORES</a>
+            <a className="button" href="/designaciones">DESIGNAR ENCUESTADORES</a>
             <a className="button" href="/roles">TIPOS DE USUARIO</a>
           </div>
         )}
@@ -77,6 +78,7 @@ export default function Panel() {
           <div style={{display:'grid',gap:'10px'}}>
             <a className="button" href="/encuestas">VER ENCUESTAS</a>
             <a className="button" href="/encuestadores">GESTIONAR ENCUESTADORES</a>
+            <a className="button" href="/designaciones">DESIGNAR ENCUESTADORES</a>
           </div>
         )}
         {!error && role === 'JEFE_ENCUESTADORES' && <a className="button" href="/jefe-encuestadores">PANEL JEFE</a>}
