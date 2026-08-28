@@ -73,6 +73,7 @@ export default function Panel() {
         <p><strong>Usuario:</strong> {email}</p>
         <p><strong>Perfil:</strong> {role}</p>
         {error && <p role="alert">{error}</p>}
+        {!error && <a className="button" href="/encuestas">VER ENCUESTAS</a>}
         <button type="button" onClick={signOut}>CERRAR SESIÓN</button>
       </section>
     </main>
