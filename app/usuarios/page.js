@@ -14,7 +14,7 @@ const roles = [
   ['DIRECTOR_HOSPITALARIO','Director Hospitalario']
 ];
 
-const vacio = { nombre:'', email:'', telefono:'', rol:'ADMIN_ENCUESTAS', alcance_ecor:'', alcance_municipio:'', alcance_establecimiento_codigo:'', alcance_establecimiento_nombre:'', alcance_hospital_nombre:'' };
+const vacio = { nombre:'', email:'', telefono:'', password:'', confirmar_password:'', rol:'ADMIN_ENCUESTAS', alcance_ecor:'', alcance_municipio:'', alcance_establecimiento_codigo:'', alcance_establecimiento_nombre:'', alcance_hospital_nombre:'' };
 
 export default function UsuariosPage() {
   const router = useRouter();
@@ -42,7 +42,10 @@ export default function UsuariosPage() {
   function setCampo(campo, valor) { setForm(prev => ({ ...prev, [campo]: valor })); }
 
   async function crear(e) {
-    e.preventDefault(); setError(''); setOk(''); setSaving(true);
+    e.preventDefault(); setError(''); setOk('');
+    if (form.password.length < 8) { setError('La contraseña debe tener al menos 8 caracteres.'); return; }
+    if (form.password !== form.confirmar_password) { setError('Las contraseñas no coinciden.'); return; }
+    setSaving(true);
     const supabase = createClient();
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.access_token) { setError('La sesión no es válida.'); setSaving(false); return; }
@@ -51,7 +54,7 @@ export default function UsuariosPage() {
     });
     const result = await res.json().catch(() => ({}));
     if (!res.ok || !result.ok) setError(result.error || 'No fue posible crear el usuario.');
-    else { setOk(`Usuario creado como ${form.rol}. Se envió la invitación a ${form.email}.`); setForm(vacio); }
+    else { setOk(`Usuario creado correctamente. El usuario de acceso es ${form.email}.`); setForm(vacio); }
     setSaving(false);
   }
 
@@ -68,8 +71,10 @@ export default function UsuariosPage() {
       <div style={{background:'#f7faf9',border:'1px solid #dce6e2',borderRadius:'12px',padding:'14px',margin:'18px 0'}}><strong>Encuestadores</strong><p style={{margin:'8px 0 0'}}>El perfil Encuestador se crea exclusivamente desde “Gestionar encuestadores”, porque requiere ID permanente, condición de externo a SESAL y asignación operativa.</p></div>
       <form onSubmit={crear} style={{display:'grid',gap:'14px'}}>
         <label><strong>Nombre completo</strong><input value={form.nombre} onChange={e=>setCampo('nombre',e.target.value)} required style={{width:'100%'}} /></label>
-        <label><strong>Correo electrónico</strong><input type="email" value={form.email} onChange={e=>setCampo('email',e.target.value)} required style={{width:'100%'}} /></label>
+        <label><strong>Correo electrónico / Usuario</strong><input type="email" value={form.email} onChange={e=>setCampo('email',e.target.value)} required style={{width:'100%'}} /></label>
         <label><strong>Número de teléfono</strong><input type="tel" value={form.telefono} onChange={e=>setCampo('telefono',e.target.value)} required style={{width:'100%'}} placeholder="Ej. +504 9999-9999" /></label>
+        <label><strong>Contraseña</strong><input type="password" value={form.password} onChange={e=>setCampo('password',e.target.value)} required minLength={8} autoComplete="new-password" style={{width:'100%'}} /><small>Mínimo 8 caracteres.</small></label>
+        <label><strong>Verificar contraseña</strong><input type="password" value={form.confirmar_password} onChange={e=>setCampo('confirmar_password',e.target.value)} required minLength={8} autoComplete="new-password" style={{width:'100%'}} /></label>
         <label><strong>Perfil</strong><select value={form.rol} onChange={e=>setCampo('rol',e.target.value)} style={{width:'100%',padding:'12px',border:'1px solid #bdcbc6',borderRadius:'9px'}}>{roles.map(([v,t]) => <option key={v} value={v}>{t}</option>)}</select></label>
         {necesitaEcor && <label><strong>ECOR asignado</strong><input value={form.alcance_ecor} onChange={e=>setCampo('alcance_ecor',e.target.value)} required style={{width:'100%'}} /></label>}
         {necesitaMunicipio && <label><strong>Municipio asignado</strong><input value={form.alcance_municipio} onChange={e=>setCampo('alcance_municipio',e.target.value)} required style={{width:'100%'}} /></label>}
