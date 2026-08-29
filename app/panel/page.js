@@ -38,14 +38,16 @@ export default function Panel() {
   if(loading)return <main className="shell"><section className="loginCard"><p>Verificando acceso…</p></section></main>;
   const esAplicador=role==='ENCUESTADOR'||role==='JEFE_ENCUESTADORES';
   const esConsulta=['CONSULTA_ECOR','CONSULTA_MUNICIPAL','CONSULTA_ESTABLECIMIENTO','DIRECTOR_HOSPITALARIO'].includes(role);
+  const panelBtn={padding:'9px 16px',fontSize:'13px',borderRadius:'8px',marginTop:'6px'};
+  const panelGrid={display:'grid',gap:'6px'};
   return <main className="shell"><section className="loginCard"><div className="badge">ENCUESTAS · OLANCHO</div><h1>Panel</h1><p>Sesión activa.</p>{name&&<p><strong>Nombre:</strong> {name}</p>}<p><strong>Usuario:</strong> {email}</p><p><strong>Perfil:</strong> {role}</p>{error&&<p role="alert">{error}</p>}
-  {!error&&role==='ADMIN_GENERAL'&&<div style={{display:'grid',gap:'10px'}}><a className="button" href="/encuestas">VER ENCUESTAS</a><a className="button" href="/reportes">REPORTES</a><a className="button" href="/usuarios">GESTIONAR USUARIOS</a><a className="button" href="/encuestadores">GESTIONAR ENCUESTADORES</a><a className="button" href="/designaciones">DESIGNAR ENCUESTADORES</a><a className="button" href="/roles">TIPOS DE USUARIO</a></div>}
-  {!error&&role==='ADMIN_ENCUESTAS'&&<div style={{display:'grid',gap:'10px'}}><a className="button" href="/encuestas">VER ENCUESTAS</a><a className="button" href="/reportes">REPORTES</a><a className="button" href="/encuestadores">GESTIONAR ENCUESTADORES</a><a className="button" href="/designaciones">DESIGNAR ENCUESTADORES</a></div>}
-  {!error&&role==='JEFE_ENCUESTADORES'&&<a className="button" href="/jefe-encuestadores">PANEL JEFE</a>}
-  {!error&&role==='ENCUESTADOR'&&<a className="button" href="/encuestador">APLICAR ENCUESTAS</a>}
-  {!error&&esConsulta&&<div style={{display:'grid',gap:'10px'}}><a className="button" href="/reportes">REPORTES</a><a className="button" href="/consulta">VER RESULTADOS</a></div>}
-  {!error&&!esAplicador&&!esConsulta&&!['ADMIN_GENERAL','ADMIN_ENCUESTAS'].includes(role)&&<a className="button" href="/encuestas">VER ENCUESTAS</a>}
-  {!error&&<a className="button" href="/actualizar-contrasena" style={{marginTop:'12px'}}>CAMBIAR CONTRASEÑA</a>}
-  {!error&&role==='ADMIN_GENERAL'&&<div style={{marginTop:'16px',paddingTop:'16px',borderTop:'1px solid #dce6e2'}}><button type="button" onClick={resetTests} style={{background:'#8f2f2f'}}>RESETEAR PRUEBAS</button><p style={{fontSize:'13px',color:'#647a74',marginTop:'8px'}}>Conserva usuarios, perfiles, catálogos e instrumentos oficiales.</p>{resetMessage&&<p role="status"><strong>{resetMessage}</strong></p>}</div>}
-  <button type="button" onClick={signOut}>CERRAR SESIÓN</button></section></main>;
+  {!error&&role==='ADMIN_GENERAL'&&<div style={panelGrid}><a className="button" style={panelBtn} href="/encuestas">VER ENCUESTAS</a><a className="button" style={panelBtn} href="/reportes">REPORTES</a><a className="button" style={panelBtn} href="/usuarios">GESTIONAR USUARIOS</a><a className="button" style={panelBtn} href="/encuestadores">GESTIONAR ENCUESTADORES</a><a className="button" style={panelBtn} href="/designaciones">DESIGNAR ENCUESTADORES</a><a className="button" style={panelBtn} href="/roles">TIPOS DE USUARIO</a></div>}
+  {!error&&role==='ADMIN_ENCUESTAS'&&<div style={panelGrid}><a className="button" style={panelBtn} href="/encuestas">VER ENCUESTAS</a><a className="button" style={panelBtn} href="/reportes">REPORTES</a><a className="button" style={panelBtn} href="/encuestadores">GESTIONAR ENCUESTADORES</a><a className="button" style={panelBtn} href="/designaciones">DESIGNAR ENCUESTADORES</a></div>}
+  {!error&&role==='JEFE_ENCUESTADORES'&&<a className="button" style={panelBtn} href="/jefe-encuestadores">PANEL JEFE</a>}
+  {!error&&role==='ENCUESTADOR'&&<a className="button" style={panelBtn} href="/encuestador">APLICAR ENCUESTAS</a>}
+  {!error&&esConsulta&&<div style={panelGrid}><a className="button" style={panelBtn} href="/reportes">REPORTES</a><a className="button" style={panelBtn} href="/consulta">VER RESULTADOS</a></div>}
+  {!error&&!esAplicador&&!esConsulta&&!['ADMIN_GENERAL','ADMIN_ENCUESTAS'].includes(role)&&<a className="button" style={panelBtn} href="/encuestas">VER ENCUESTAS</a>}
+  {!error&&<a className="button" href="/actualizar-contrasena" style={{...panelBtn,marginTop:'10px'}}>CAMBIAR CONTRASEÑA</a>}
+  {!error&&role==='ADMIN_GENERAL'&&<div style={{marginTop:'14px',paddingTop:'14px',borderTop:'1px solid #dce6e2'}}><button type="button" onClick={resetTests} style={{background:'#8f2f2f',padding:'9px 16px',fontSize:'13px'}}>RESETEAR PRUEBAS</button><p style={{fontSize:'13px',color:'#647a74',marginTop:'8px'}}>Conserva usuarios, perfiles, catálogos e instrumentos oficiales.</p>{resetMessage&&<p role="status"><strong>{resetMessage}</strong></p>}</div>}
+  <button type="button" onClick={signOut} style={{padding:'9px 16px',fontSize:'13px',marginTop:'10px'}}>CERRAR SESIÓN</button></section></main>;
 }
