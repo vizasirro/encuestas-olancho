@@ -12,6 +12,7 @@ export default function Panel() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [resetMessage, setResetMessage] = useState('');
+  const [resetting, setResetting] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -34,7 +35,19 @@ export default function Panel() {
   }, [router]);
 
   async function signOut() { const supabase=createClient(); await supabase.auth.signOut(); router.replace('/login'); router.refresh(); }
-  function resetTests(){if(role!=='ADMIN_GENERAL')return;if(!window.confirm('RESETEO DE PRUEBAS\n\nEsta acción limpiará los datos temporales de prueba del navegador. No elimina usuarios, perfiles, catálogos ni instrumentos oficiales. ¿Desea continuar?'))return;if(!window.confirm('Confirme nuevamente el RESETEO DE PRUEBAS.'))return;try{window.localStorage.clear();window.sessionStorage.clear();setResetMessage('Entorno de prueba reiniciado.')}catch{setResetMessage('No fue posible completar el reseteo local.')}}
+  async function resetTests(){
+    if(role!=='ADMIN_GENERAL'||resetting)return;
+    if(!window.confirm('RESETEO DE PRUEBAS\n\nEsta acción eliminará las sesiones y respuestas de prueba, por lo que los reportes quedarán en cero. Conserva usuarios, perfiles, catálogos, instrumentos y designaciones. ¿Desea continuar?'))return;
+    if(!window.confirm('Confirme nuevamente el RESETEO DE PRUEBAS. Esta acción no se puede deshacer.'))return;
+    setResetting(true);setResetMessage('');
+    const supabase=createClient();
+    const{data,error:resetError}=await supabase.rpc('resetear_pruebas_encuestas');
+    if(resetError){setResetMessage(`No fue posible completar el reseteo: ${resetError.message}`);setResetting(false);return;}
+    try{window.localStorage.clear();window.sessionStorage.clear();}catch{}
+    const r=Array.isArray(data)?data[0]:null;
+    setResetMessage(`Entorno de prueba reiniciado. ${r?.sesiones_eliminadas??0} sesiones y ${r?.respuestas_eliminadas??0} respuestas eliminadas. Los reportes quedaron en cero.`);
+    setResetting(false);
+  }
   if(loading)return <main className="shell"><section className="loginCard"><p>Verificando acceso…</p></section></main>;
   const esAplicador=role==='ENCUESTADOR'||role==='JEFE_ENCUESTADORES';
   const esConsulta=['CONSULTA_ECOR','CONSULTA_MUNICIPAL','CONSULTA_ESTABLECIMIENTO','DIRECTOR_HOSPITALARIO'].includes(role);
@@ -48,6 +61,6 @@ export default function Panel() {
   {!error&&esConsulta&&<div style={panelGrid}><a className="button" style={panelBtn} href="/reportes">REPORTES</a><a className="button" style={panelBtn} href="/consulta">VER RESULTADOS</a></div>}
   {!error&&!esAplicador&&!esConsulta&&!['ADMIN_GENERAL','ADMIN_ENCUESTAS'].includes(role)&&<a className="button" style={panelBtn} href="/encuestas">VER ENCUESTAS</a>}
   {!error&&<a className="button" href="/actualizar-contrasena" style={{...panelBtn,marginTop:'10px'}}>CAMBIAR CONTRASEÑA</a>}
-  {!error&&role==='ADMIN_GENERAL'&&<div style={{marginTop:'14px',paddingTop:'14px',borderTop:'1px solid #dce6e2'}}><button type="button" onClick={resetTests} style={{background:'#8f2f2f',padding:'9px 16px',fontSize:'13px'}}>RESETEAR PRUEBAS</button><p style={{fontSize:'13px',color:'#647a74',marginTop:'8px'}}>Conserva usuarios, perfiles, catálogos e instrumentos oficiales.</p>{resetMessage&&<p role="status"><strong>{resetMessage}</strong></p>}</div>}
+  {!error&&role==='ADMIN_GENERAL'&&<div style={{marginTop:'14px',paddingTop:'14px',borderTop:'1px solid #dce6e2'}}><button type="button" disabled={resetting} onClick={resetTests} style={{background:'#8f2f2f',padding:'9px 16px',fontSize:'13px'}}>{resetting?'RESETEANDO…':'RESETEAR PRUEBAS'}</button><p style={{fontSize:'13px',color:'#647a74',marginTop:'8px'}}>Elimina sesiones y respuestas de prueba. Conserva usuarios, perfiles, catálogos, instrumentos y designaciones.</p>{resetMessage&&<p role="status"><strong>{resetMessage}</strong></p>}</div>}
   <button type="button" onClick={signOut} style={{padding:'9px 16px',fontSize:'13px',marginTop:'10px'}}>CERRAR SESIÓN</button></section></main>;
 }
