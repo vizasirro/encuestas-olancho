@@ -1,4 +1,5 @@
 import './globals.css';
+import VizaLoginLink from './VizaLoginLink';
 
 export const metadata = {
   title: 'Encuestas de Satisfacción | Olancho',
@@ -8,7 +9,10 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="es">
-      <body>{children}</body>
+      <body>
+        {children}
+        <VizaLoginLink />
+      </body>
     </html>
   );
 }
