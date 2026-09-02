@@ -40,6 +40,7 @@ export default function JefePage() {
         </div>
         <a className="button" href="/encuestador">APLICAR ENCUESTAS</a>
         <a className="button" href="/encuestadores" style={{marginLeft:'10px'}}>VER ENCUESTADORES</a>
+        <a className="button" href="/encuestas" style={{marginLeft:'10px'}}>VER ENCUESTAS</a>
         <a className="back" href="/panel">← Volver al panel</a>
       </section>
     </main>
