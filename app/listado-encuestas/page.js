@@ -2,7 +2,7 @@
 import {useEffect,useMemo,useState} from 'react';
 import {useRouter} from 'next/navigation';
 import {createClient} from '../../utils/supabase/client';
-const roles=['ADMIN_GENERAL','ADMIN_ENCUESTAS','CONSULTA_ECOR','CONSULTA_MUNICIPAL','CONSULTA_ESTABLECIMIENTO','DIRECTOR_HOSPITALARIO'];
+const roles=['ADMIN_GENERAL','ADMIN_ENCUESTAS','JEFE_ENCUESTADORES','CONSULTA_ECOR','CONSULTA_MUNICIPAL','CONSULTA_ESTABLECIMIENTO','DIRECTOR_HOSPITALARIO'];
 const val=v=>Array.isArray(v)?v.join(' | '):(v==null?'':String(v));
 export default function ListadoEncuestas(){
  const router=useRouter();const[lista,setLista]=useState([]),[detalle,setDetalle]=useState([]),[sel,setSel]=useState(null),[q,setQ]=useState(''),[estado,setEstado]=useState('ENVIADA'),[encuestador,setEncuestador]=useState(''),[loading,setLoading]=useState(true),[error,setError]=useState('');
