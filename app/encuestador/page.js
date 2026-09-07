@@ -19,12 +19,19 @@ export default function EncuestadorPage() {
   const [encuestaEnCurso,setEncuestaEnCurso]=useState(null);
 
   useEffect(() => {
-    try{const raw=localStorage.getItem(CURSO_KEY);if(raw)setEncuestaEnCurso(JSON.parse(raw));}catch{}
     let active = true;
     async function load() {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { router.replace('/login'); return; }
+      try {
+        const raw=localStorage.getItem(CURSO_KEY);
+        if(raw){
+          const guardada=JSON.parse(raw);
+          if(guardada?.user_id===user.id)setEncuestaEnCurso(guardada);
+          else localStorage.removeItem(CURSO_KEY);
+        }
+      } catch { try{localStorage.removeItem(CURSO_KEY)}catch{} }
       const { data: perfilData, error: perfilError } = await supabase.rpc('obtener_mi_perfil');
       const p = Array.isArray(perfilData) ? perfilData[0] : null;
       if (perfilError || !p) { if (active) setError('No fue posible identificar el perfil del usuario.'); setLoading(false); return; }
@@ -47,7 +54,7 @@ export default function EncuestadorPage() {
   function continuarEncuesta(){if(encuestaEnCurso?.url)router.push(encuestaEnCurso.url)}
   function solicitarConsentimiento(){if(encuestaEnCurso){setError('Ya existe una encuesta en curso. Debe continuarla y finalizarla antes de iniciar otra.');return}if(!seleccion){setError('Seleccione la designación con la que realizará la encuesta.');return}setError('');setMensaje('');setMostrarConsentimiento(true)}
   function noAceptaParticipar(){setMostrarConsentimiento(false);setError('');setMensaje('La persona no aceptó participar. No se creó ninguna encuesta ni se contabilizó respuesta.')}
-  async function aceptaParticipar(){if(encuestaEnCurso){setMostrarConsentimiento(false);setError('Ya existe una encuesta en curso. Continúela antes de iniciar otra.');return}if(!seleccion){setError('Seleccione la designación con la que realizará la encuesta.');setMostrarConsentimiento(false);return}setError('');setMensaje('');setIniciando(true);const supabase=createClient();const{data,error:rpcError}=await supabase.rpc('iniciar_encuesta_asignada',{p_designacion_id:Number(seleccion)});const sesion=Array.isArray(data)?data[0]:null;if(rpcError||!sesion){setError(rpcError?.message||'No fue posible iniciar la encuesta.');setIniciando(false);return}const url=`/encuestas/${sesion.encuesta_codigo}?sesion=${sesion.sesion_id}&folio=${encodeURIComponent(sesion.folio)}&modo=aplicacion`;try{localStorage.setItem(CURSO_KEY,JSON.stringify({url,sesion_id:sesion.sesion_id,folio:sesion.folio,codigo:sesion.encuesta_codigo}))}catch{}router.push(url)}
+  async function aceptaParticipar(){if(encuestaEnCurso){setMostrarConsentimiento(false);setError('Ya existe una encuesta en curso. Continúela antes de iniciar otra.');return}if(!seleccion){setError('Seleccione la designación con la que realizará la encuesta.');setMostrarConsentimiento(false);return}setError('');setMensaje('');setIniciando(true);const supabase=createClient();const{data:{user}}=await supabase.auth.getUser();if(!user){router.replace('/login');return}const{data,error:rpcError}=await supabase.rpc('iniciar_encuesta_asignada',{p_designacion_id:Number(seleccion)});const sesion=Array.isArray(data)?data[0]:null;if(rpcError||!sesion){setError(rpcError?.message||'No fue posible iniciar la encuesta.');setIniciando(false);return}const url=`/encuestas/${sesion.encuesta_codigo}?sesion=${sesion.sesion_id}&folio=${encodeURIComponent(sesion.folio)}&modo=aplicacion`;try{localStorage.setItem(CURSO_KEY,JSON.stringify({url,sesion_id:sesion.sesion_id,folio:sesion.folio,codigo:sesion.encuesta_codigo,user_id:user.id}))}catch{}router.push(url)}
 
   if (loading) return <main className="shell"><section className="loginCard"><p>Preparando módulo del encuestador…</p></section></main>;
 
