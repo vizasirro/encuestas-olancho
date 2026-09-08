@@ -52,9 +52,22 @@ export default function EncuestadorPage() {
   }, [router]);
 
   function continuarEncuesta(){if(encuestaEnCurso?.url)router.push(encuestaEnCurso.url)}
-  function solicitarConsentimiento(){if(encuestaEnCurso){setError('Ya existe una encuesta en curso. Debe continuarla y finalizarla antes de iniciar otra.');return}if(!seleccion){setError('Seleccione la designación con la que realizará la encuesta.');return}setError('');setMensaje('');setMostrarConsentimiento(true)}
+  function descartarEncuestaPendiente(){
+    if(!encuestaEnCurso)return;
+    const ok=window.confirm('¿Descartar esta encuesta pendiente de este teléfono y habilitar una nueva? La encuesta anterior NO se contará como enviada.');
+    if(!ok)return;
+    try{
+      localStorage.removeItem(CURSO_KEY);
+      if(encuestaEnCurso?.sesion_id)localStorage.removeItem(`encuestas_olancho_avance_${encuestaEnCurso.sesion_id}`);
+    }catch{}
+    setEncuestaEnCurso(null);
+    setMostrarConsentimiento(false);
+    setError('');
+    setMensaje('Encuesta pendiente retirada de este teléfono. Ya puede seleccionar una designación e iniciar una NUEVA ENCUESTA.');
+  }
+  function solicitarConsentimiento(){if(encuestaEnCurso){setError('Ya existe una encuesta en curso. Debe continuarla o descartarla antes de iniciar otra.');return}if(!seleccion){setError('Seleccione la designación con la que realizará la encuesta.');return}setError('');setMensaje('');setMostrarConsentimiento(true)}
   function noAceptaParticipar(){setMostrarConsentimiento(false);setError('');setMensaje('La persona no aceptó participar. No se creó ninguna encuesta ni se contabilizó respuesta.')}
-  async function aceptaParticipar(){if(encuestaEnCurso){setMostrarConsentimiento(false);setError('Ya existe una encuesta en curso. Continúela antes de iniciar otra.');return}if(!seleccion){setError('Seleccione la designación con la que realizará la encuesta.');setMostrarConsentimiento(false);return}setError('');setMensaje('');setIniciando(true);const supabase=createClient();const{data:{user}}=await supabase.auth.getUser();if(!user){router.replace('/login');return}const{data,error:rpcError}=await supabase.rpc('iniciar_encuesta_asignada',{p_designacion_id:Number(seleccion)});const sesion=Array.isArray(data)?data[0]:null;if(rpcError||!sesion){setError(rpcError?.message||'No fue posible iniciar la encuesta.');setIniciando(false);return}const url=`/encuestas/${sesion.encuesta_codigo}?sesion=${sesion.sesion_id}&folio=${encodeURIComponent(sesion.folio)}&modo=aplicacion`;try{localStorage.setItem(CURSO_KEY,JSON.stringify({url,sesion_id:sesion.sesion_id,folio:sesion.folio,codigo:sesion.encuesta_codigo,user_id:user.id}))}catch{}router.push(url)}
+  async function aceptaParticipar(){if(encuestaEnCurso){setMostrarConsentimiento(false);setError('Ya existe una encuesta en curso. Continúela o descártela antes de iniciar otra.');return}if(!seleccion){setError('Seleccione la designación con la que realizará la encuesta.');setMostrarConsentimiento(false);return}setError('');setMensaje('');setIniciando(true);const supabase=createClient();const{data:{user}}=await supabase.auth.getUser();if(!user){router.replace('/login');return}const{data,error:rpcError}=await supabase.rpc('iniciar_encuesta_asignada',{p_designacion_id:Number(seleccion)});const sesion=Array.isArray(data)?data[0]:null;if(rpcError||!sesion){setError(rpcError?.message||'No fue posible iniciar la encuesta.');setIniciando(false);return}const url=`/encuestas/${sesion.encuesta_codigo}?sesion=${sesion.sesion_id}&folio=${encodeURIComponent(sesion.folio)}&modo=aplicacion`;try{localStorage.setItem(CURSO_KEY,JSON.stringify({url,sesion_id:sesion.sesion_id,folio:sesion.folio,codigo:sesion.encuesta_codigo,user_id:user.id}))}catch{}router.push(url)}
 
   if (loading) return <main className="shell"><section className="loginCard"><p>Preparando módulo del encuestador…</p></section></main>;
 
@@ -62,7 +75,7 @@ export default function EncuestadorPage() {
     <div className="badge">ENCUESTAS · OLANCHO</div><h1>Aplicar encuestas</h1>
     {perfil?.nombre && <p><strong>Nombre:</strong> {perfil.nombre}</p>}
     {perfil?.rol==='ADMIN_ENCUESTAS'&&<p><strong>Perfil acumulable:</strong> Administrador de Encuestas · Jefe de Encuestadores · Encuestador.</p>}
-    {encuestaEnCurso&&<div style={{border:'2px solid #17634e',borderRadius:14,padding:20,margin:'18px 0',background:'#f7faf9'}}><h2 style={{marginTop:0}}>Encuesta en curso</h2><p>Hay una encuesta que todavía no ha sido finalizada. Continúe la misma encuesta; no se creará una nueva.</p>{encuestaEnCurso.folio&&<p><strong>Folio:</strong> {encuestaEnCurso.folio}</p>}<button type="button" onClick={continuarEncuesta} style={{width:'100%',padding:16,fontSize:18}}>CONTINUAR ENCUESTA</button></div>}
+    {encuestaEnCurso&&<div style={{border:'2px solid #17634e',borderRadius:14,padding:20,margin:'18px 0',background:'#f7faf9'}}><h2 style={{marginTop:0}}>Encuesta en curso</h2><p>Hay una encuesta que todavía no ha sido finalizada. Puede continuarla o descartarla de este teléfono para iniciar una nueva.</p>{encuestaEnCurso.folio&&<p><strong>Folio:</strong> {encuestaEnCurso.folio}</p>}<div style={{display:'grid',gap:10}}><button type="button" onClick={continuarEncuesta} style={{width:'100%',padding:16,fontSize:18}}>CONTINUAR ENCUESTA</button><button type="button" onClick={descartarEncuestaPendiente} style={{width:'100%',padding:14,fontSize:16,background:'#fff',color:'#173d33',border:'2px solid #17634e'}}>DESCARTAR ENCUESTA PENDIENTE</button></div><p style={{fontSize:13,color:'#647a74',marginBottom:0}}>Descartar solo libera este teléfono. La encuesta pendiente no se contabiliza como enviada.</p></div>}
     {designaciones.length > 0 ? <>
       <label style={{display:'block',fontWeight:700,margin:'18px 0 8px'}}>Designación para esta encuesta</label>
       <select value={seleccion} disabled={!!encuestaEnCurso} onChange={e=>{setSeleccion(e.target.value);setMostrarConsentimiento(false);setMensaje('');setError('')}} style={{width:'100%',padding:'12px'}}><option value="">Seleccione designación</option>{designaciones.map(d => <option key={d.id} value={d.id}>{d.establecimiento_nombre} · {d.tipo_encuesta==='AMBULATORIA'?'Atención Ambulatoria':'Hospitalización / Internamiento'} · {d.realizadas||0} de {d.meta_encuestas||'—'}</option>)}</select>
