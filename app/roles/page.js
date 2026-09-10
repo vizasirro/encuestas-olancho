@@ -8,7 +8,7 @@ const ROLES = [
   ['ADMIN_GENERAL','Administrador General','Autoridad máxima del sistema. Gestiona todos los perfiles, parámetros y alcance departamental.'],
   ['ADMIN_ENCUESTAS','Administrador de Encuestas','Administra únicamente encuestadores dentro del alcance autorizado.'],
   ['JEFE_ENCUESTADORES','Jefe de Encuestadores','Planifica, supervisa, asigna establecimiento/tipo de encuesta y también puede aplicar encuestas.'],
-  ['ENCUESTADOR','Encuestador','Aplica encuestas. Debe ser externo a SESAL y trabajar solo en su asignación vigente.'],
+  ['ENCUESTADOR','Encuestador','Aplica encuestas dentro de sus designaciones vigentes. Puede ser personal SESAL o externo; esta condición se registra de forma independiente.'],
   ['CONSULTA_ECOR','Consulta ECOR','Solo lectura para el ECOR asignado.'],
   ['CONSULTA_MUNICIPAL','Consulta Municipal','Solo lectura para el municipio y sus establecimientos autorizados.'],
   ['CONSULTA_ESTABLECIMIENTO','Consulta Establecimiento','Solo lectura para el establecimiento asignado.'],
