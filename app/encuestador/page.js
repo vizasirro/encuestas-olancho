@@ -17,6 +17,7 @@ export default function EncuestadorPage() {
   const [iniciando, setIniciando] = useState(false);
   const [mostrarConsentimiento, setMostrarConsentimiento] = useState(false);
   const [encuestaEnCurso,setEncuestaEnCurso]=useState(null);
+  const [descartando,setDescartando]=useState(false);
 
   useEffect(() => {
     let active = true;
@@ -52,18 +53,31 @@ export default function EncuestadorPage() {
   }, [router]);
 
   function continuarEncuesta(){if(encuestaEnCurso?.url)router.push(encuestaEnCurso.url)}
-  function descartarEncuestaPendiente(){
-    if(!encuestaEnCurso)return;
-    const ok=window.confirm('¿Descartar esta encuesta pendiente de este teléfono y habilitar una nueva? La encuesta anterior NO se contará como enviada.');
+  async function descartarEncuestaPendiente(){
+    if(!encuestaEnCurso||descartando)return;
+    const ok=window.confirm('¿Descartar esta encuesta pendiente? Se marcará como CANCELADA en el servidor, conservará su folio para trazabilidad y NO se contará como enviada.');
     if(!ok)return;
+    setError('');setMensaje('');setDescartando(true);
+    const supabase=createClient();
+    const {data,error:e}=await supabase.rpc('cancelar_encuesta_pendiente',{p_sesion_id:encuestaEnCurso.sesion_id});
+    if(e){
+      setError(`No fue posible cancelar la encuesta pendiente en el servidor. No se ha eliminado del teléfono. ${e.message||''}`.trim());
+      setDescartando(false);
+      return;
+    }
+    if(data!==true){
+      setError('La sesión ya no está EN CURSO o no pertenece a este usuario. No se eliminó el avance local para evitar pérdida de información.');
+      setDescartando(false);
+      return;
+    }
     try{
       localStorage.removeItem(CURSO_KEY);
       if(encuestaEnCurso?.sesion_id)localStorage.removeItem(`encuestas_olancho_avance_${encuestaEnCurso.sesion_id}`);
     }catch{}
     setEncuestaEnCurso(null);
     setMostrarConsentimiento(false);
-    setError('');
-    setMensaje('Encuesta pendiente retirada de este teléfono. Ya puede seleccionar una designación e iniciar una NUEVA ENCUESTA.');
+    setMensaje('Encuesta pendiente cancelada correctamente y retirada de este teléfono. Ya puede iniciar una NUEVA ENCUESTA.');
+    setDescartando(false);
   }
   function solicitarConsentimiento(){if(encuestaEnCurso){setError('Ya existe una encuesta en curso. Debe continuarla o descartarla antes de iniciar otra.');return}if(!seleccion){setError('Seleccione la designación con la que realizará la encuesta.');return}setError('');setMensaje('');setMostrarConsentimiento(true)}
   function noAceptaParticipar(){setMostrarConsentimiento(false);setError('');setMensaje('La persona no aceptó participar. No se creó ninguna encuesta ni se contabilizó respuesta.')}
@@ -75,7 +89,7 @@ export default function EncuestadorPage() {
     <div className="badge">ENCUESTAS · OLANCHO</div><h1>Aplicar encuestas</h1>
     {perfil?.nombre && <p><strong>Nombre:</strong> {perfil.nombre}</p>}
     {perfil?.rol==='ADMIN_ENCUESTAS'&&<p><strong>Perfil acumulable:</strong> Administrador de Encuestas · Jefe de Encuestadores · Encuestador.</p>}
-    {encuestaEnCurso&&<div style={{border:'2px solid #17634e',borderRadius:14,padding:20,margin:'18px 0',background:'#f7faf9'}}><h2 style={{marginTop:0}}>Encuesta en curso</h2><p>Hay una encuesta que todavía no ha sido finalizada. Puede continuarla o descartarla de este teléfono para iniciar una nueva.</p>{encuestaEnCurso.folio&&<p><strong>Folio:</strong> {encuestaEnCurso.folio}</p>}<div style={{display:'grid',gap:10}}><button type="button" onClick={continuarEncuesta} style={{width:'100%',padding:16,fontSize:18}}>CONTINUAR ENCUESTA</button><button type="button" onClick={descartarEncuestaPendiente} style={{width:'100%',padding:14,fontSize:16,background:'#fff',color:'#173d33',border:'2px solid #17634e'}}>DESCARTAR ENCUESTA PENDIENTE</button></div><p style={{fontSize:13,color:'#647a74',marginBottom:0}}>Descartar solo libera este teléfono. La encuesta pendiente no se contabiliza como enviada.</p></div>}
+    {encuestaEnCurso&&<div style={{border:'2px solid #17634e',borderRadius:14,padding:20,margin:'18px 0',background:'#f7faf9'}}><h2 style={{marginTop:0}}>Encuesta en curso</h2><p>Hay una encuesta que todavía no ha sido finalizada. Puede continuarla o cancelarla para iniciar una nueva.</p>{encuestaEnCurso.folio&&<p><strong>Folio:</strong> {encuestaEnCurso.folio}</p>}<div style={{display:'grid',gap:10}}><button type="button" disabled={descartando} onClick={continuarEncuesta} style={{width:'100%',padding:16,fontSize:18}}>CONTINUAR ENCUESTA</button><button type="button" disabled={descartando} onClick={descartarEncuestaPendiente} style={{width:'100%',padding:14,fontSize:16,background:'#fff',color:'#173d33',border:'2px solid #17634e'}}>{descartando?'CANCELANDO…':'DESCARTAR ENCUESTA PENDIENTE'}</button></div><p style={{fontSize:13,color:'#647a74',marginBottom:0}}>Al descartar, la sesión se marca CANCELADA en el servidor, conserva su folio para trazabilidad y no se contabiliza como enviada.</p></div>}
     {designaciones.length > 0 ? <>
       <label style={{display:'block',fontWeight:700,margin:'18px 0 8px'}}>Designación para esta encuesta</label>
       <select value={seleccion} disabled={!!encuestaEnCurso} onChange={e=>{setSeleccion(e.target.value);setMostrarConsentimiento(false);setMensaje('');setError('')}} style={{width:'100%',padding:'12px'}}><option value="">Seleccione designación</option>{designaciones.map(d => <option key={d.id} value={d.id}>{d.establecimiento_nombre} · {d.tipo_encuesta==='AMBULATORIA'?'Atención Ambulatoria':'Hospitalización / Internamiento'} · {d.realizadas||0} de {d.meta_encuestas||'—'}</option>)}</select>
