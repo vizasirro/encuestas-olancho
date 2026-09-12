@@ -3,6 +3,7 @@ import { createBrowserClient } from '@supabase/ssr';
 let browserClient = null;
 let exposedClient = null;
 const REQUEST_TIMEOUT_MS = 20000;
+const REPORT_PAGE_SIZE = 1000;
 
 async function fetchWithTimeout(input, init = {}) {
   const controller = new AbortController();
@@ -24,33 +25,21 @@ async function fetchWithTimeout(input, init = {}) {
   }
 }
 
-async function detalleCompletoDesdeServidor(client, originalRpc) {
-  const { data: detalleOriginal, error: detalleError } = await originalRpc('detalle_reportes_encuestas');
-  const original = Array.isArray(detalleOriginal) ? detalleOriginal : [];
+async function detalleReportesPaginado(originalRpc) {
+  const detalle = [];
 
-  try {
-    const { data: { session } } = await client.auth.getSession();
-    const token = session?.access_token;
-    if (!token) return { data: original, error: detalleError || null };
+  for (let desde = 0; ; desde += REPORT_PAGE_SIZE) {
+    const hasta = desde + REPORT_PAGE_SIZE - 1;
+    const { data, error } = await originalRpc('detalle_reportes_encuestas').range(desde, hasta);
+    if (error) return { data: detalle, error };
 
-    const res = await fetch('/api/reportes-detalle', {
-      method: 'GET',
-      headers: { Authorization: `Bearer ${token}` },
-      cache: 'no-store'
-    });
-    if (!res.ok) return { data: original, error: detalleError || null };
+    const bloque = Array.isArray(data) ? data : [];
+    detalle.push(...bloque);
 
-    const payload = await res.json();
-    const detalle = Array.isArray(payload?.detalle) ? payload.detalle : [];
-    const sesionesOriginales = new Set(original.map(x => String(x.sesion_id))).size;
-    const sesionesServidor = new Set(detalle.map(x => String(x.sesion_id))).size;
-
-    // Regla de plata: solo reemplaza si la cobertura mejora o iguala la existente.
-    if (sesionesServidor < sesionesOriginales) return { data: original, error: detalleError || null };
-    return { data: detalle, error: null };
-  } catch {
-    return { data: original, error: detalleError || null };
+    if (bloque.length < REPORT_PAGE_SIZE) break;
   }
+
+  return { data: detalle, error: null };
 }
 
 export function createClient() {
@@ -72,8 +61,8 @@ export function createClient() {
     get(target, prop) {
       if (prop === 'rpc') {
         return (fn, args, options) => {
-          if (fn === 'detalle_reportes_encuestas') {
-            return detalleCompletoDesdeServidor(browserClient, originalRpc);
+          if (fn === 'detalle_reportes_encuestas' && !args && !options) {
+            return detalleReportesPaginado(originalRpc);
           }
           return originalRpc(fn, args, options);
         };
