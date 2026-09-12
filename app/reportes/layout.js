@@ -1,4 +1,5 @@
 import CruceLibreChartEnhancer from './CruceLibreChartEnhancer';
+import ReportTotalsAuditEnhancer from './ReportTotalsAuditEnhancer';
 
 export default function ReportesLayout({children}){
   return <>
@@ -7,6 +8,7 @@ export default function ReportesLayout({children}){
       <a href="/reportes" style={{display:'inline-block',padding:'12px 18px',borderRadius:10,border:'2px solid #17634e',color:'#17634e',fontWeight:800,textDecoration:'none',background:'#fff'}}>REPORTE DETALLADO</a>
     </div>
     {children}
+    <ReportTotalsAuditEnhancer/>
     <CruceLibreChartEnhancer/>
   </>
 }
