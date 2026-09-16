@@ -1,5 +1,6 @@
 import CruceLibreChartEnhancer from './CruceLibreChartEnhancer';
 import ReportTotalsAuditEnhancer from './ReportTotalsAuditEnhancer';
+import ReportSummaryClarifier from './ReportSummaryClarifier';
 
 export default function ReportesLayout({children}){
   return <>
@@ -10,5 +11,6 @@ export default function ReportesLayout({children}){
     {children}
     <ReportTotalsAuditEnhancer/>
     <CruceLibreChartEnhancer/>
+    <ReportSummaryClarifier/>
   </>
 }
