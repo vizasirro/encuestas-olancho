@@ -1,0 +1,9 @@
+create index if not exists idx_vigilancia_cierres_boletin on public.vigilancia_cierres_semanales(boletin_id);
+create index if not exists idx_vigilancia_conteos_enfermedad on public.vigilancia_conteos(enfermedad_codigo);
+create index if not exists idx_vigilancia_eventos_boletin on public.vigilancia_eventos_inmediatos(boletin_id);
+create index if not exists idx_vigilancia_fichas_enfermedad on public.vigilancia_fichas(enfermedad_codigo);
+create index if not exists idx_vigilancia_fichas_evento on public.vigilancia_fichas(evento_id);
+create index if not exists idx_vigilancia_fichas_validador on public.vigilancia_fichas(validado_por);
+create index if not exists idx_vigilancia_intentos_clinica on public.vigilancia_intentos_acceso(clinica_id);
+create index if not exists idx_vigilancia_listas_validador on public.vigilancia_listas_nominales(validado_por);
+create index if not exists idx_vigilancia_perfiles_clinica on public.vigilancia_perfiles(clinica_id);

@@ -8,13 +8,14 @@
     "start": "next start"
   },
   "dependencies": {
-    "@supabase/ssr": "latest",
-    "@supabase/supabase-js": "latest",
-    "jspdf": "latest",
-    "jspdf-autotable": "latest",
-    "next": "latest",
-    "react": "latest",
-    "react-dom": "latest",
-    "xlsx": "latest"
+    "@supabase/ssr": "0.12.7",
+    "@supabase/supabase-js": "2.116.0",
+    "jspdf": "4.2.1",
+    "jspdf-autotable": "5.0.8",
+    "next": "16.3.5",
+    "qrcode": "1.5.4",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "xlsx": "0.18.5"
   }
 }

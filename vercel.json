@@ -1,3 +1,9 @@
 {
-  "framework": "nextjs"
+  "framework": "nextjs",
+  "crons": [
+    {
+      "path": "/api/vigilancia/cron/cierre-semanal",
+      "schedule": "0 14 * * 1"
+    }
+  ]
 }

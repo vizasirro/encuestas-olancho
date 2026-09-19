@@ -1,0 +1,8 @@
+import { getClients } from '../../../utils/vigilancia/server';
+
+export const dynamic='force-dynamic';
+
+export default async function FichasOficiales(){
+ let items=[],unavailable=false;try{const{admin}=getClients();const{data,error}=await admin.from('vigilancia_enfermedades').select('codigo,nombre,ficha_nombre,ficha_url').eq('activa',true).eq('requiere_ficha',true).order('orden');if(error)throw error;items=data||[]}catch{unavailable=true}
+ return <main className="vig-shell"><div className="vig-wrap"><div className="vig-header"><div><span className="vig-badge">DOCUMENTOS OFICIALES</span><h1>Fichas epidemiológicas</h1><p>Descarga de las fichas aprobadas por SESAL.</p></div><a className="vig-button light" href="/vigilancia">Inicio</a></div><section className="vig-card"><p>Descargue la ficha correspondiente, complétela y envíela al correo oficial indicado en el instructivo con el código de la clínica y la semana epidemiológica en el asunto.</p><p className="vig-note">La clínica conserva el correo enviado y sus anexos durante 13 meses. Vigilancia confirmará si la ficha fue recibida, requiere corrección o quedó validada.</p></section>{unavailable&&<p className="vig-error">El catálogo no está disponible temporalmente.</p>}<section className="vig-grid">{items.map(x=><article className="vig-card" key={x.codigo}><h2>{x.nombre}</h2><p>{x.ficha_nombre||'Ficha epidemiológica oficial'}</p>{x.ficha_url?<a className="vig-button" href={x.ficha_url} target="_blank" rel="noreferrer">DESCARGAR FICHA</a>:<span className="vig-status pending">Pendiente de cargar copia oficial</span>}</article>)}</section></div></main>
+}

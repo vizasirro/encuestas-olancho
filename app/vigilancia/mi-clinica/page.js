@@ -1,0 +1,12 @@
+'use client';
+import { useEffect,useState } from 'react';
+import { createClient } from '../../../utils/supabase/client';
+
+async function session(){const s=createClient();const {data:{session}}=await s.auth.getSession();return session}
+export default function MiClinica(){
+ const[clinic,setClinic]=useState(null),[pin,setPin]=useState(''),[confirmPin,setConfirmPin]=useState(''),[error,setError]=useState(''),[ok,setOk]=useState(''),[loading,setLoading]=useState(false);
+ async function call(method='GET',body){const ses=await session();const r=await fetch('/api/vigilancia/mi-clinica',{method,headers:{'Content-Type':'application/json',Authorization:`Bearer ${ses?.access_token||''}`},body:body?JSON.stringify(body):undefined});const d=await r.json();if(!r.ok)throw new Error(d.error);return d}
+ useEffect(()=>{call().then(d=>setClinic(d.clinica)).catch(e=>setError(e.message))},[]);
+ async function submit(e){e.preventDefault();setError('');setOk('');if(pin!==confirmPin){setError('Los códigos no coinciden.');return}setLoading(true);try{await call('PATCH',{pin});setOk('Código actualizado. Se enviará confirmación al correo registrado.');setPin('');setConfirmPin('')}catch(e){setError(e.message)}finally{setLoading(false)}}
+ return <main className="vig-shell"><div className="vig-wrap" style={{maxWidth:'620px'}}><div className="vig-header"><div><span className="vig-badge">RESPONSABLE DE CLÍNICA</span><h1>Mi clínica</h1></div><a className="vig-button light" href="/vigilancia/panel">Volver</a></div><section className="vig-card"><h2>{clinic?.nombre||'Cargando…'}</h2>{clinic&&<p>{clinic.codigo} · {clinic.municipio} · {clinic.activa?'Activa':'Suspendida'}</p>}<h3>Cambiar código de cuatro dígitos</h3><form onSubmit={submit} className="vig-grid" style={{gridTemplateColumns:'1fr'}}><label className="vig-field">Nuevo código<input inputMode="numeric" pattern="[0-9]{4}" maxLength={4} required value={pin} onChange={e=>setPin(e.target.value.replace(/\D/g,'').slice(0,4))}/></label><label className="vig-field">Confirmar código<input inputMode="numeric" pattern="[0-9]{4}" maxLength={4} required value={confirmPin} onChange={e=>setConfirmPin(e.target.value.replace(/\D/g,'').slice(0,4))}/></label>{error&&<p className="vig-error">{error}</p>}{ok&&<p className="vig-ok">{ok}</p>}<button className="vig-button" disabled={loading}>{loading?'CAMBIANDO…':'CAMBIAR CÓDIGO'}</button></form></section></div></main>
+}
